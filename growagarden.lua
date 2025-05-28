@@ -38,9 +38,9 @@ print("Complete Loading")
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/daucobonhi/UiRedzV5/refs/heads/main/DemoUi.lua"))();
 
    local Windows = redzlib:MakeWindow({
-	Title = "LH-HUB",
+	Title = "LH-HUB | GAG",
 	SubTitle = "by Havanlong_",
-	SaveFolder = "Blox Fruits.lua"
+	SaveFolder = "GAG.lua"
 })
 Windows:AddMinimizeButton({
   Button = { Image = "rbxassetid://80896980458454", BackgroundTransparency = 0 },
@@ -52,6 +52,15 @@ local shop = Windows:MakeTab({"Shop", "Info"})
 local Farm = Windows:MakeTab({"Main","Info"})
 local tele = Windows:MakeTab({"Teleport", "Info"})
 
+local _Discord = dis do
+  _Discord:AddDiscordInvite({
+    Name = "LongHuy Hub | Community",
+    Description = "Join our discord community to receive information about the next update",
+    Logo = "rbxassetid://80896980458454",
+    Invite = "https://discord.gg/sTxk5pjc"
+  })
+end
+
 local selectedSeed = ""
 
 local seedOptions = {
@@ -60,10 +69,7 @@ local seedOptions = {
 	"Cactus", "Dragon Fruit", "Mango", "Grape", "Mushroom", "Pepper",
 	"Cacao", "Beanstalk"
 }
-local Paragraph = shop:AddParagraph({
-	Title = "Buy Seeds",
-	Desc = ""
-   })
+shop:AddSection("Buy Seeds")
 
 shop:AddDropdown({
 	Name = "Select Seeds",
@@ -97,10 +103,7 @@ local gearOptions = {
 	"Watering Can", "Trowel", "Lightning Rod", "Harvest Tool", "Basic Sprinkler", "Advanced Sprinkler",
 	"Godly Sprinkler", "Master Sprinkler", "Favorite Tool", "Recall Wrench"
 }
-local Paragraph = shop:AddParagraph({
-	Title = "Buy Gears",
-	Desc = ""
-   })
+shop:AddSection("Buy Gears")
 
 shop:AddDropdown({
 	Name = "Select Gears",
@@ -128,10 +131,7 @@ shop:AddToggle({
 	end
 })
 
-local Paragraph = shop:AddParagraph({
-	Title = "Buy Eggs",
-	Desc = ""
-   })
+shop:AddSection("Buy Eggs")
    
 local selectedEggOrder = nil
 
@@ -161,10 +161,7 @@ shop:AddToggle({
 	end
 })
 
-local Paragraph = tele:AddParagraph({
-	Title = "Teleport",
-	Desc = ""
-   })
+tele:AddSection("Teleport")
    
 tele:AddButton({
 	Name = "Sell",
@@ -208,10 +205,7 @@ tele:AddButton({
 
 local selectedSeed = ""
 local plantingPosition = nil
-local Paragraph = Farm:AddParagraph({
-	Title = "Auto Plant Position",
-	Desc = "lol"
-   })
+Farm:AddSection("Auto Plant Position")
    
 Farm:AddDropdown({
 	Name = "Select Seed",
@@ -300,4 +294,65 @@ Farm:AddToggle({
 			wait(1)
 		end
 	end
+})
+
+local selectedSeed = ""
+Farm:AddSection("Auto Plant")
+ 
+Farm:AddDropdown({
+	Name = "Selected Seeds",
+	Default = false,
+	Options = {
+		"Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn",
+		"Daffodil", "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut",
+		"Cactus", "Dragon Fruit", "Mango", "Grape", "Mushroom", "Pepper",
+		"Cacao", "Beanstalk"
+	},
+	Callback = function(seed)
+		selectedSeed = seed
+	end
+})
+
+local autoPlantEnabled = false
+
+Farm:AddToggle({
+	Name = "Auto Plant",
+	Default = false,
+	Callback = function(state)
+		autoPlantEnabled = state
+		while autoPlantEnabled do
+			if selectedSeed ~= "" then
+				local player = game.Players.LocalPlayer
+				if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+					local currentPosition = player.Character.HumanoidRootPart.Position
+					local args = {
+						Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z),
+						selectedSeed
+					}
+					game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Plant_RE"):FireServer(unpack(args))
+				end
+			end
+			wait(0.000001)
+		end
+	end
+})
+Farm:AddSection("Auto Sell")
+
+local autoSellEnabled = false
+
+Farm:AddToggle({
+    Name = "Auto Sell",
+    Default = false,
+    Callback = function(state)
+        autoSellEnabled = state
+        while autoSellEnabled do
+            local player = game.Players.LocalPlayer
+            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(86.582, 3.000, 0.427)
+                wait(1)
+                game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
+            end
+            wait(1)
+        end
+    end
 })
