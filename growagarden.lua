@@ -51,6 +51,7 @@ local dis = Windows:MakeTab({"Discord", "Info"})
 local shop = Windows:MakeTab({"Shop", "Info"})
 local Farm = Windows:MakeTab({"Main","Info"})
 local tele = Windows:MakeTab({"Teleport", "Info"})
+local misc = Windows:MakeTab({"Misc", "Info"})
 
 local _Discord = dis do
   _Discord:AddDiscordInvite({
@@ -356,3 +357,123 @@ Farm:AddToggle({
         end
     end
 })
+
+local autoPressE = false
+
+Farm:AddSection("Auto collect")
+
+Farm:AddToggle({
+	Name = "Auto collect",
+	Default = false,
+	Callback = function(state)
+		autoPressE = state
+		while autoPressE do
+			local vim = game:GetService("VirtualInputManager")
+			vim:SendKeyEvent(true, "E", false, game)
+			wait(0.1)
+		end
+	end
+})
+
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+local humanoid = localPlayer.Character:WaitForChild("Humanoid")
+local humanoidRootPart = localPlayer.Character:WaitForChild("HumanoidRootPart")
+
+local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
+local autoWalkEnabled = false
+
+local function getPartPosition(model)
+    if model:IsA("Model") then
+        if model.PrimaryPart then
+            return model.PrimaryPart.Position
+        else
+            for _, part in ipairs(model:GetChildren()) do
+                if part:IsA("BasePart") then
+                    return part.Position
+                end
+            end
+        end
+    elseif model:IsA("BasePart") then
+        return model.Position
+    end
+    return nil
+end
+
+local function walkTo(position)
+    humanoid:MoveTo(position)
+    humanoid.MoveToFinished:Wait()
+end
+
+local function createNotify(title, text, iconId, duration)
+    local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CustomNotifyGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = PlayerGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 80)
+    frame.Position = UDim2.new(1, -120, 1, -120)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BackgroundTransparency = 0.2
+    frame.BorderSizePixel = 0
+    frame.AnchorPoint = Vector2.new(1, 1)
+    frame.Parent = screenGui
+
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(0, 50, 0, 50)
+    icon.Position = UDim2.new(0, 10, 0.5, -25)
+    icon.BackgroundTransparency = 1
+    icon.Image = "rbxassetid://" .. tostring(iconId)
+    icon.Parent = frame
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -70, 0, 25)
+    titleLabel.Position = UDim2.new(0, 70, 0, 10)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.new(1,1,1)
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.TextSize = 20
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = frame
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, -70, 0, 40)
+    textLabel.Position = UDim2.new(0, 70, 0, 35)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = text
+    textLabel.TextColor3 = Color3.new(1,1,1)
+    textLabel.Font = Enum.Font.SourceSans
+    textLabel.TextSize = 16
+    textLabel.TextWrapped = true
+    textLabel.Parent = frame
+
+    delay(duration or 3, function()
+        screenGui:Destroy()
+    end)
+end
+
+Farm:AddToggle({
+    Name = "Auto Walk to Plants",
+    Default = false,
+    Callback = function(state)
+        autoWalkEnabled = state
+        while autoWalkEnabled do
+            for _, plant in ipairs(plantsFolder:GetChildren()) do
+                if not autoWalkEnabled then break end
+
+                local targetPosition = getPartPosition(plant)
+                if targetPosition then
+                    createNotify("Đang di chuyển đến cây", plant.Name, 80896980458454, 3)
+                    walkTo(targetPosition)
+                end
+
+                wait(1)
+            end
+        end
+    end
+})
+--if true do then
+Farm:AddSection("Auto Gears")
